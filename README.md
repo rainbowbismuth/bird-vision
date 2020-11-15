@@ -13,16 +13,30 @@ Once you have everything installed, and the data downloaded, you can do the foll
 
 
 Run tests:
-```
+```shell script
 python -m birdvision.scripts.run_tests
 ```
 
 Train new models:
-```
+```shell script
 python -m birdvision.scripts.train_models
 ```
 
 Or, if you want to run the web viewer, to visualize test cases:
-```
+```shell script
 FLASK_APP=birdvision.web python -m flask run
+```
+
+
+You can also watch the stream live if you have `ffmpeg` and `stream-link` installed:
+```shell script
+python -m birdvision.scripts.live_stream
+```
+
+# MacOS
+
+You can set up your own RAM Disk like so, useful for mass image downloading / manipulation when you don't necessarily want it to stick around.
+
+```shell script
+diskutil erasevolume HFS+ RAM_Disk_512MB $(hdiutil attach -nomount ram://512000)
 ```

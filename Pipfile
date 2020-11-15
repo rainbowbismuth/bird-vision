@@ -13,6 +13,7 @@ opencv-python = "*"
 sklearn = "*"
 python-dotenv = "*"
 numpy = "*"
+pygame = "*"
 
 [dev-packages]
 

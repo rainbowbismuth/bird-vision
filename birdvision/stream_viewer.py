@@ -1,66 +1,46 @@
 """
 This module contains functions for spawning processes to watch the Twitch stream programmatically.
-
-While there are many references to a RAM Disk, using one is not necessary, just encouraged. This code works by having
-ffmpeg repeatedly write images into a specific path, and having another python thread read and delete them. You don't
-want any of this touching your hard-disk or SSD, and having a finite-size disk will help in-case something goes wrong
-with ffmpeg or the code consuming those images. JPEGs are a lot bigger than individual frame in a compressed video file.
 """
 
 import os
 import queue as q
 import subprocess
 import threading
-import time
-from pathlib import Path
-
-import cv2
-
-
-def get_ram_disk_path(ram_disk_path=None) -> Path:
-    if ram_disk_path is None:
-        return Path(os.environ['RAM_DISK_PATH'])
-    else:
-        return Path(ram_disk_path)
 
 
 def get_stream_url():
-    ok = subprocess.run(['streamlink', '--stream-url', 'https://www.twitch.tv/fftbattleground', 'best'])
-    return ok.stdout
+    ok = subprocess.run(
+        ['streamlink', '--stream-url', 'https://www.twitch.tv/fftbattleground', 'best'],
+        capture_output=True)
+    return str(ok.stdout, encoding='utf-8')
 
 
-def download_stream(stop: threading.Event, fps=None, ram_disk_path=None):
-    """Use ffmpeg to start downloading the stream into JPGs on your RAM disk. This function blocks until ffmpeg
-    is killed, or `stop` is set. If `stop` is set, then the ffmpeg process is killed if alive."""
-    if fps is None:
-        fps = int(os.environ['FPS'])
-
-    ram_disk_path = get_ram_disk_path(ram_disk_path)
-    stream_url = get_stream_url()
-    process = subprocess.Popen(['ffmpeg', '-i', stream_url, '-filter:v', 'crop=990:740:145:260', '-qscale:v', '3', '-r',
-                                str(fps), '-f', 'image2', f'{ram_disk_path}/output_%05d.jpg'])
+def download_stream(queue: q.Queue, stop: threading.Event, fps=None):
+    """Start watching twitch, this function blocks forever until `stop` is set or an error occurs in ffmpeg. It writes
+    each frame as raw bytes into the queue.
+    """
     try:
-        while process.poll() is None and not stop.is_set():
-            time.sleep(1.0)
-    finally:
-        if process.poll() is None:
-            process.kill()
+        if fps is None:
+            fps = int(os.environ['FPS'])
+        stream_url = get_stream_url()
 
-
-def ram_disk_reader(queue: q.Queue, stop: threading.Event, ram_disk_path=None):
-    """Loop until `stop` is set, reading images in `ram_disk_path`, deleting them and adding them to `queue`. When
-    this code exits for any reason, `stop` is set."""
-    ram_disk_path = get_ram_disk_path(ram_disk_path)
-
-    try:
-        while not stop.is_set():
-            paths = sorted(ram_disk_path.glob('*.jpg'))
-            for path in paths:
-                try:
-                    image = cv2.imread(path.as_posix())
-                    path.unlink(missing_ok=True)
-                    queue.put(image, block=False)
-                except q.Full:
+        with subprocess.Popen(['ffmpeg', '-loglevel', 'panic', '-i', stream_url, '-filter:v',
+                               'crop=990:740:145:260', '-q:v', '2', '-r', str(fps), '-f',
+                               'mpjpeg', 'pipe:1'],
+                              stdout=subprocess.PIPE,
+                              bufsize=1024 * 1024 * 2) as proc:
+            length = 0
+            while not stop.is_set():
+                line = proc.stdout.readline().strip()
+                if line.startswith(b'--'):
                     continue
+                if line.startswith(b'Content-type:'):
+                    assert line.endswith(b'image/jpeg')
+                    continue
+                if line.startswith(b'Content-length:'):
+                    length = int(line[len(b'Content-length: '):])
+                    continue
+                if line == b'':
+                    queue.put(proc.stdout.read(length))
     finally:
         stop.set()

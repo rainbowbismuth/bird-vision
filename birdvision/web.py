@@ -1,5 +1,5 @@
 """
-A small local web application, to view the stream live, and to view the results of our automated testing.
+A small local web application, to view the results of our automated testing.
 """
 from typing import List
 
