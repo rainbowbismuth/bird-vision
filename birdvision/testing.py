@@ -4,16 +4,16 @@ This module contains a simple testing framework, so that we can test finders and
 It's designed so that all test results are stored in a global variable, and you will need to re-run the program
 to rerun the tests.
 """
-from termcolor import colored
-import cv2
-from pathlib import Path
-from dataclasses import dataclass
-from typing import List
+import itertools
 import sys
-import json
+from dataclasses import dataclass
+from importlib.abc import Finder
+from typing import List
+
+from termcolor import colored
 
 from birdvision.finder import Found
-import itertools
+from birdvision.frame import Frame
 
 RESULTS = []
 
@@ -25,6 +25,8 @@ WRAP_AT = 100
 @dataclass
 class TestResult:
     file: str
+    finder: Finder
+    frame: Frame
     ok: bool
     actual: object
     expected: object
@@ -50,6 +52,9 @@ def run_all_tests():
 
     for result in itertools.chain(*test_sets):
         add_test_result(result)
+
+    if len(RESULTS) % WRAP_AT != 0:
+        print()
 
 
 def summarize_tests():

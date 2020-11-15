@@ -6,4 +6,3 @@ def configure():
     Loads configuration from your .env
     """
     load_dotenv(find_dotenv())
-

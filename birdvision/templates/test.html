@@ -4,12 +4,12 @@
     <div class="row">
         <div class="col">
             {% if result.ok %}
-                <h2>OK &mdash; {{ result.reading.name }} &mdash; {{ result.file }}</h2>
+                <h2>OK &mdash; {{ result.finder.name }} &mdash; {{ result.file }}</h2>
             {% else %}
-                <h2>FAIL &mdash; {{ result.reading.name }} &mdash; {{ result.file }}</h2>
+                <h2>FAIL &mdash; {{ result.finder.name }} &mdash; {{ result.file }}</h2>
             {% endif %}
 
-            <img height="600" src="/static/{{ result.file }}">
+            <img height="600" src="/test/{{ result.idx }}/frame">
             <br/>
             <img src="/test/{{ result.idx }}/prepared-with-rects">
 
@@ -22,10 +22,10 @@
                 </tr>
                 </thead>
                 <tbody>
-                {% for (certainty, char) in result.reading.prob_chars %}
+                {% for reading in result.readings %}
                     <tr>
-                        <td>{{ "%.2f"|format(certainty) }}</td>
-                        <td>{{ char }}</td>
+                        <td>{{ "%.2f"|format(reading.certainty) }}</td>
+                        <td>{{ reading.value }}</td>
                         <td><img src="/test/{{ result.idx }}/char/{{ loop.index0 }}"></td>
                     </tr>
                 {% endfor %}

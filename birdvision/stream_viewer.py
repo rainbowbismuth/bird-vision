@@ -7,13 +7,14 @@ want any of this touching your hard-disk or SSD, and having a finite-size disk w
 with ffmpeg or the code consuming those images. JPEGs are a lot bigger than individual frame in a compressed video file.
 """
 
-import queue as q
-import threading
 import os
-from pathlib import Path
-import cv2
+import queue as q
 import subprocess
+import threading
 import time
+from pathlib import Path
+
+import cv2
 
 
 def get_ram_disk_path(ram_disk_path=None) -> Path:
@@ -63,4 +64,3 @@ def ram_disk_reader(queue: q.Queue, stop: threading.Event, ram_disk_path=None):
                     continue
     finally:
         stop.set()
-

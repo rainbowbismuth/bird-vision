@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+
 import numpy as np
 
 
@@ -13,7 +14,7 @@ class Rectangle:
 
     def crop(self, arr: np.ndarray) -> np.ndarray:
         """Crop a multi-dimensional array, where y comes first."""
-        return arr[self.y:self.bottom_y, self.x : self.right_x]
+        return arr[self.y:self.bottom_y, self.x: self.right_x]
 
     def move(self, x_offset, y_offset) -> 'Rectangle':
         """Return a new Rectangle that has been moved by an offset."""

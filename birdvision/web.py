@@ -3,13 +3,13 @@ A small local web application, to view the stream live, and to view the results 
 """
 from typing import List
 
-from flask import Flask, Response, render_template, send_from_directory
+import cv2
+import numpy as np
 from dotenv import load_dotenv, find_dotenv
-import birdvision.testing
+from flask import Flask, Response, render_template
 
 import birdvision.quiet
-import cv2
-
+import birdvision.testing
 from birdvision.rectangle import Rectangle
 
 load_dotenv(find_dotenv())
@@ -44,11 +44,20 @@ def show_test(index):
     return render_template('test.html', result=result)
 
 
+@app.route('/test/<int:index>/frame')
+def show_test_frame(index):
+    result = birdvision.testing.RESULTS[index]
+    return to_png(result.frame.color)
+
+
 @app.route('/test/<int:index>/char/<int:char_idx>')
 def show_test_char(index, char_idx):
     result = birdvision.testing.RESULTS[index]
-    image = result.notes["crops"][char_idx]
-    return to_png(image)
+    reading = result.readings[char_idx]
+    if reading.notes:
+        return to_png(reading.notes["crop"])
+    else:
+        return to_png(np.zeros((32, 32)))
 
 
 @app.route('/test/<int:index>/prepared')
@@ -63,10 +72,6 @@ def show_test_prepared_rects(index):
     result = birdvision.testing.RESULTS[index]
     image = result.notes["prepared"]
     color_mapped = cv2.applyColorMap(image, cv2.COLORMAP_BONE)
-    add_reading_rects_cropped(color_mapped, result.notes["local_rects"])
+    local_rects = [reading.notes["local_rect"] for reading in result.readings if reading.notes]
+    add_reading_rects_cropped(color_mapped, local_rects)
     return to_png(color_mapped)
-
-
-@app.route('/static/<path:path>')
-def show_static(path):
-    return send_from_directory('', path)

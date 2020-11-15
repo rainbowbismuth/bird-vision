@@ -1,9 +1,9 @@
 """
 This program runs every image recognition test.
 """
-from birdvision.config import configure
-import birdvision.testing
 import birdvision.quiet
+import birdvision.testing
+from birdvision.config import configure
 
 
 def main():

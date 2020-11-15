@@ -3,8 +3,9 @@ This modules contains a class, `CharacterModel`, to read the two main fonts used
 to train the models in the first place.
 """
 
-import numpy as np
 import os
+
+import numpy as np
 
 SMALL_DIGIT_CHARSET = "0123456789"
 ALPHA_NUM_CHARSET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+"
@@ -26,6 +27,7 @@ class CharacterModel:
 
     The character arrays mentioned are supposed to be 32x32 uint8 arrays that have already been preprocessed.
     """
+
     def __init__(self):
         import tensorflow as tf
         self.small_digit_model = tf.keras.models.load_model(os.environ['SMALL_DIGIT_MODEL'])
@@ -106,4 +108,3 @@ def train_alpha_num():
 
 def train_small_digit():
     _train(os.environ['SMALL_DIGIT_SRC'], SMALL_DIGIT_CHARSET, os.environ['SMALL_DIGIT_MODEL'])
-

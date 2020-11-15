@@ -20,9 +20,9 @@
                     <tr>
                         <td>{{ failure.idx }}</td>
                         <td>{{ failure.file }}</td>
-                        <td>{{ failure.reading.name }}</td>
+                        <td>{{ failure.finder.name }}</td>
                         <td>{{ failure.expected }}</td>
-                        <td>{{ failure.reading.value }}</td>
+                        <td>{{ failure.actual }}</td>
                         <td><a href="test/{{ failure.idx }}">view</a></td>
                     </tr>
                 {% endfor %}

@@ -1,8 +1,8 @@
 """
 This program trains all of our models from scratch
 """
-from birdvision.config import configure
 from birdvision.character import train_small_digit, train_alpha_num
+from birdvision.config import configure
 
 
 def main():

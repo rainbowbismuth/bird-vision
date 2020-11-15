@@ -1,4 +1,5 @@
 from birdvision.config import configure
+
 configure()
 
 import click

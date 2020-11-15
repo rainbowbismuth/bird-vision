@@ -8,6 +8,7 @@ class Frame:
     There are many potential processing steps that happen when examining a frame, and this class lazily computes them
     when called upon.
     """
+
     def __init__(self, color_image):
         self.color = color_image
         self._gray_min = None

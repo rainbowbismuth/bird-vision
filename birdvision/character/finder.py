@@ -1,11 +1,12 @@
 from typing import Optional, List, Iterable
 
+import cv2
+import numpy as np
+
 from birdvision.character.model import CharacterModel
 from birdvision.finder import Finder, Found
 from birdvision.frame import Frame
 from birdvision.rectangle import Rectangle
-import cv2
-import numpy as np
 
 PREPARED_CHAR_DIMENSIONS = (32, 32)
 
@@ -71,7 +72,7 @@ def _calculate_spaces(rects: List[Rectangle]):
     last_end = rects[0].right_x
     for i, rect in enumerate(rects):
         if rect.x - last_end > 7:
-            out.append(i-1)
+            out.append(i - 1)
         last_end = rect.right_x
     return out
 
@@ -88,17 +89,22 @@ class CharacterFinder(Finder):
         rects = _find_character_rects(prepared_img)
         crops = [cv2.resize(rect.crop(prepared_img), PREPARED_CHAR_DIMENSIONS) for rect in rects]
 
+        chars, certainty = self.reader_fn(crops)
+        spaces = _calculate_spaces(rects)
+
         if notes is not None:
             notes['prepared'] = prepared_img
-            notes['crops'] = crops
-            notes['local_rects'] = rects
-            notes['absolute_rects'] = [rect.move(self.rect.x, self.rect.y) for rect in rects]
 
-        chars, certainty = self.reader_fn(crops)
-
-        spaces = _calculate_spaces(rects)
         for i, char in enumerate(chars):
-            yield Found(self, char, certainty[i], None)
+            note = None
+            if notes is not None:
+                note = {
+                    "crop": crops[i],
+                    "local_rect": rects[i],
+                    "absolute_rect": rects[i].move(self.rect.x, self.rect.y)
+                }
+
+            yield Found(self, char, certainty[i], note)
             if i in spaces:
                 yield Found(self, ' ', 1.0, None)
 
