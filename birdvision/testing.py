@@ -50,3 +50,8 @@ def run_all_tests():
 
     for result in itertools.chain(*test_sets):
         add_test_result(result)
+
+
+def summarize_tests():
+    failures = len([result for result in RESULTS if not result.ok])
+    print(f'\n{failures} failures / {len(RESULTS)} total')

@@ -1,4 +1,4 @@
-from typing import Generator, Optional, List, Iterable
+from typing import Optional, List, Iterable
 
 from birdvision.character.model import CharacterModel
 from birdvision.finder import Finder, Found
@@ -83,7 +83,7 @@ class CharacterFinder(Finder):
         self.prepare_fn = prepare_fn
         self.reader_fn = reader_fn
 
-    def find(self, frame: Frame, notes: Optional[dict] = None) -> Generator[Found]:
+    def find(self, frame: Frame, notes: Optional[dict] = None) -> Iterable[Found]:
         prepared_img = self.prepare_fn(frame, self.rect)
         rects = _find_character_rects(prepared_img)
         crops = [cv2.resize(rect.crop(prepared_img), PREPARED_CHAR_DIMENSIONS) for rect in rects]
@@ -91,7 +91,8 @@ class CharacterFinder(Finder):
         if notes is not None:
             notes['prepared'] = prepared_img
             notes['crops'] = crops
-            notes['rects'] = [rect.move(self.rect.x, self.rect.y) for rect in rects]
+            notes['local_rects'] = rects
+            notes['absolute_rects'] = [rect.move(self.rect.x, self.rect.y) for rect in rects]
 
         chars, certainty = self.reader_fn(crops)
 

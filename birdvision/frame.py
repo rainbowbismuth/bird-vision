@@ -15,14 +15,14 @@ class Frame:
 
     @property
     def gray_min(self):
-        if self._gray_min:
+        if self._gray_min is not None:
             return self._gray_min
         self._gray_min = np.min(self.color, axis=2)
         return self._gray_min
 
     @property
     def gray_max(self):
-        if self._gray_max:
+        if self._gray_max is not None:
             return self._gray_max
         self._gray_max = np.max(self.color, axis=2)
         return self._gray_max

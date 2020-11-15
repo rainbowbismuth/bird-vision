@@ -4,7 +4,7 @@ This module contains `Finder` and `Found`, which allow you to find specific thin
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Generator, Optional
+from typing import Optional, Iterable
 
 from birdvision.frame import Frame
 
@@ -30,7 +30,7 @@ class Finder(ABC):
     name: str
 
     @abstractmethod
-    def find(self, frame: Frame, notes: dict = None) -> Generator[Found]:
+    def find(self, frame: Frame, notes: dict = None) -> Iterable[Found]:
         """
         Start finding things in the `frame`.
 
