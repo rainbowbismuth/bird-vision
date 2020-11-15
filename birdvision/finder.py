@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Optional, Iterable
 
-from birdvision.frame import Frame
+from birdvision.node import Node
 
 
 @dataclass(frozen=True)
@@ -30,7 +30,7 @@ class Finder(ABC):
     name: str
 
     @abstractmethod
-    def find(self, frame: Frame, notes: dict = None) -> Iterable[Found]:
+    def find(self, frame: Node, notes: dict = None) -> Iterable[Found]:
         """
         Start finding things in the `frame`.
 

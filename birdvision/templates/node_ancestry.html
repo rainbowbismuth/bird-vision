@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="row">
+        <div class="col">
+            <h2>Ancestry</h2>
+            <table>
+                <thead>
+                <tr>
+                    <th>Process</th>
+                    <th>Arguments</th>
+                    <th>Result</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for ancestor in ancestors %}
+                    <tr>
+                        <td>
+                            {% if ancestor.key[0] %}
+                                {{ ancestor.key[0] }}
+                            {% else %}
+                                Root Node
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if ancestor.key[0] %}
+                                <ul>
+                                    {% for argument in ancestor.key[1:] %}
+                                        <li>{{ argument }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </td>
+                        <td><img style="max-width: 500px"
+                                src="/test/{{ test }}/char/{{ char }}/ancestor/{{ loop.index0 }}"></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

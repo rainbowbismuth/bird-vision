@@ -16,7 +16,7 @@ import birdvision.character as character
 import birdvision.quiet
 import birdvision.stream_viewer as stream_viewer
 from birdvision.config import configure
-from birdvision.frame import Frame
+from birdvision.node import Node
 
 
 def add_reading_rects(image, finder_rect, rects):
@@ -76,8 +76,8 @@ def main():
         if image is None:
             continue
 
-        frame = Frame(image)
-        color_mapped = cv2.applyColorMap(frame.gray, cv2.COLORMAP_BONE)
+        frame = Node(image)
+        color_mapped = cv2.applyColorMap(frame.gray.image, cv2.COLORMAP_BONE)
 
         for i, finder in enumerate(char_finders):
             notes = {}

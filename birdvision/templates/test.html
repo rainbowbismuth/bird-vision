@@ -18,7 +18,8 @@
                 <tr>
                     <th>Certainty</th>
                     <th>Character</th>
-                    <th></th>
+                    <th>Image</th>
+                    <th>Ancestry</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -27,12 +28,11 @@
                         <td>{{ "%.2f"|format(reading.certainty) }}</td>
                         <td>{{ reading.value }}</td>
                         <td><img src="/test/{{ result.idx }}/char/{{ loop.index0 }}"></td>
+                        <td><a href="/test/{{ result.idx }}/char/{{ loop.index0 }}/ancestry">view</a></td>
                     </tr>
                 {% endfor %}
                 </tbody>
             </table>
-
-
         </div>
     </div>
 {% endblock %}

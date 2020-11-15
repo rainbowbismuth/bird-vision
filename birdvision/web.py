@@ -47,7 +47,7 @@ def show_test(index):
 @app.route('/test/<int:index>/frame')
 def show_test_frame(index):
     result = birdvision.testing.RESULTS[index]
-    return to_png(result.frame.color)
+    return to_png(result.frame.image)
 
 
 @app.route('/test/<int:index>/char/<int:char_idx>')
@@ -55,7 +55,28 @@ def show_test_char(index, char_idx):
     result = birdvision.testing.RESULTS[index]
     reading = result.readings[char_idx]
     if reading.notes:
-        return to_png(reading.notes["crop"])
+        return to_png(reading.notes["crop"].image)
+    else:
+        return to_png(np.zeros((32, 32)))
+
+
+@app.route('/test/<int:index>/char/<int:char_idx>/ancestry')
+def show_test_char_ancestry(index, char_idx):
+    result = birdvision.testing.RESULTS[index]
+    reading = result.readings[char_idx]
+    ancestors = []
+    if reading.notes:
+        ancestors = list(reading.notes["crop"].ancestors)
+    return render_template('node_ancestry.html', test=index, char=char_idx, ancestors=ancestors)
+
+
+@app.route('/test/<int:index>/char/<int:char_idx>/ancestor/<int:ancestor_idx>')
+def show_test_char_ancestor(index, char_idx, ancestor_idx):
+    result = birdvision.testing.RESULTS[index]
+    reading = result.readings[char_idx]
+    if reading.notes:
+        ancestors = list(reading.notes["crop"].ancestors)
+        return to_png(ancestors[ancestor_idx].image)
     else:
         return to_png(np.zeros((32, 32)))
 

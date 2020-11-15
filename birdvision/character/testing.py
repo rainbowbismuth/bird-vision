@@ -4,7 +4,7 @@ from pathlib import Path
 import cv2
 
 import birdvision.character as character
-from birdvision.frame import Frame
+from birdvision.node import Node
 from birdvision.testing import TestResult
 
 
@@ -16,7 +16,7 @@ def run():
 
     for fp, case in test_cases.items():
         img = cv2.imread('data/tests/character/' + fp)
-        frame = Frame(img)
+        frame = Node(img)
 
         for key, expected in case.items():
             finder = by_name[key]

@@ -39,3 +39,6 @@ class Rectangle:
     def bottom_right(self):
         """Returns the bottom right point of the rectangle, as a tuple"""
         return self.right_x, self.bottom_y
+
+    def __repr__(self):
+        return f'Rectangle({self.x}, {self.y}, {self.width}, {self.height})'

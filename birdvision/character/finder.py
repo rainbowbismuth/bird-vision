@@ -5,7 +5,7 @@ import numpy as np
 
 from birdvision.character.model import CharacterModel
 from birdvision.finder import Finder, Found
-from birdvision.frame import Frame
+from birdvision.node import Node
 from birdvision.rectangle import Rectangle
 
 PREPARED_CHAR_DIMENSIONS = (32, 32)
@@ -84,16 +84,16 @@ class CharacterFinder(Finder):
         self.prepare_fn = prepare_fn
         self.reader_fn = reader_fn
 
-    def find(self, frame: Frame, notes: Optional[dict] = None) -> Iterable[Found]:
-        prepared_img = self.prepare_fn(frame, self.rect)
-        rects = _find_character_rects(prepared_img)
-        crops = [cv2.resize(rect.crop(prepared_img), PREPARED_CHAR_DIMENSIONS) for rect in rects]
+    def find(self, frame: Node, notes: Optional[dict] = None) -> Iterable[Found]:
+        prepared_node = self.prepare_fn(frame, self.rect)
+        rects = _find_character_rects(prepared_node.image)
+        crops = [prepared_node.crop(rect).thumbnail32 for rect in rects]
 
-        chars, certainty = self.reader_fn(crops)
+        chars, certainty = self.reader_fn([crop.image for crop in crops])
         spaces = _calculate_spaces(rects)
 
         if notes is not None:
-            notes['prepared'] = prepared_img
+            notes['prepared'] = prepared_node.image
 
         for i, char in enumerate(chars):
             note = None
@@ -109,14 +109,12 @@ class CharacterFinder(Finder):
                 yield Found(self, ' ', 1.0, None)
 
 
-def _light_text(frame: Frame, rect: Rectangle):
-    cropped = rect.crop(frame.gray_min)
-    return cv2.threshold(cropped, 125, 255, cv2.THRESH_BINARY)[1]
+def _light_text(frame: Node, rect: Rectangle):
+    return frame.gray_min.crop(rect).threshold_binary(125, 255)
 
 
-def _dark_text(frame: Frame, rect: Rectangle):
-    cropped = rect.crop(frame.gray_max)
-    return cv2.threshold(cropped, 110, 255, cv2.THRESH_BINARY_INV)[1]
+def _dark_text(frame: Node, rect: Rectangle):
+    return frame.gray_max.crop(rect).threshold_binary_inv(110, 255)
 
 
 def finders_from_model(model: CharacterModel):

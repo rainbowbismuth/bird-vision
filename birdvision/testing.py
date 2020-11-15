@@ -13,7 +13,7 @@ from typing import List
 from termcolor import colored
 
 from birdvision.finder import Found
-from birdvision.frame import Frame
+from birdvision.node import Node
 
 RESULTS = []
 
@@ -26,7 +26,7 @@ WRAP_AT = 100
 class TestResult:
     file: str
     finder: Finder
-    frame: Frame
+    frame: Node
     ok: bool
     actual: object
     expected: object
