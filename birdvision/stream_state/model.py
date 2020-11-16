@@ -24,8 +24,7 @@ STREAM_STATES = [
     'Game_Select_Half_Right',
     'Game_Select_Full',
     'Game_AbilityTag',
-    'Stream_Winner_One',
-    'Stream_Winner_Two',
+    'Stream_Winner',
     'Stream_Result',
 ]
 

@@ -13,8 +13,8 @@ import numpy as np
 import pygame
 
 import birdvision.character as character
-import birdvision.stream_state as stream_state
 import birdvision.quiet
+import birdvision.stream_state as stream_state
 import birdvision.stream_viewer as stream_viewer
 from birdvision.config import configure
 from birdvision.node import Node
@@ -29,10 +29,11 @@ def add_reading_rects(image, finder_rect, rects):
 def main():
     configure()
     birdvision.quiet.silence_tensorflow()
+    fps = int(os.environ['FPS'])
 
     stop_event = threading.Event()
 
-    queue = Queue(maxsize=100)
+    queue = Queue(maxsize=fps * 10)
     ffmpeg_thread = threading.Thread(
         target=lambda: stream_viewer.download_stream(queue, stop_event),
         daemon=True)
@@ -54,12 +55,11 @@ def main():
 
     surface = pygame.Surface((990, 740))
 
-    offsets = [(5, i * 28 + 5 + 740) for i in range(6)] + [(305, i * 28 + 5 + 740) for i in range(6)]
+    offsets = [(5, i * 28 + 5 + 740) for i in range(6)] + [(505, i * 28 + 5 + 740) for i in range(6)]
     finder_names = [font.render(finder.name, True, (255, 255, 255)) for finder in finders]
 
     clock = pygame.time.Clock()
     letter_count = 0
-    fps = int(os.environ['FPS'])
 
     while not stop_event.is_set():
         for event in pygame.event.get():
@@ -105,10 +105,14 @@ def main():
             #             reading.images[j])
             #         letter_count += 1
 
+            certainty = np.product([reading.certainty for reading in readings])
+
             offset = offset_x, offset_y = offsets[i]
             screen.blit(finder_names[i], offset)
             text_surf = font.render(value, True, (255, 255, 255))
             screen.blit(text_surf, (offset_x + 100, offset_y))
+            certainty_surf = font.render(f'{certainty:.2f}', True, (255, 255, 255))
+            screen.blit(certainty_surf, (offset_x + 400, offset_y))
 
         color_mapped = color_mapped[..., ::-1].copy()
         arr = pygame.surfarray.map_array(surface, color_mapped).swapaxes(0, 1)
