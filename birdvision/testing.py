@@ -41,7 +41,7 @@ class TestFramework:
         result.idx = len(self.results)
         self.results.append(result)
 
-        for node in result.frame.descendents():
+        for node in result.frame.descendents_and_me():
             new_id = uuid4()
             node.test_uuid = new_id
             node.test_result = result

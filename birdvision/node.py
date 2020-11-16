@@ -33,9 +33,12 @@ class Node:
         yield from self.ancestors()
 
     def descendents(self) -> Iterable['Node']:
-        yield self
         for child in self.children.values():
-            yield from child.descendents()
+            yield from child.descendents_and_me()
+
+    def descendents_and_me(self) -> Iterable['Node']:
+        yield self
+        yield from self.descendents()
 
     @property
     def gray(self) -> 'Node':
