@@ -54,7 +54,14 @@ class Node:
 
     @property
     def thumbnail32(self) -> 'Node':
-        return thumbnail32(self)
+        return resize(self, 32, 32)
+
+    @property
+    def thumbnail64(self) -> 'Node':
+        return resize(self, 64, 64)
+
+    def resize(self, width: int, height: int) -> 'Node':
+        return resize(self, width, height)
 
     def crop(self, rect: Rectangle) -> 'Node':
         return crop(self, rect)
@@ -113,8 +120,8 @@ def gray_max(node: Node):
 
 
 @memoized_node
-def thumbnail32(node: Node):
-    return cv2.resize(node.image, (32, 32))
+def resize(node: Node, width: int, height: int):
+    return cv2.resize(node.image, (width, height))
 
 
 @memoized_node

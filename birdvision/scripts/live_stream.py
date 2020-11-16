@@ -13,6 +13,7 @@ import numpy as np
 import pygame
 
 import birdvision.character as character
+import birdvision.stream_state as stream_state
 import birdvision.quiet
 import birdvision.stream_viewer as stream_viewer
 from birdvision.config import configure
@@ -47,12 +48,14 @@ def main():
     black = 0, 0, 0
 
     char_model = character.CharacterModel()
-    char_finders = character.finders_from_model(char_model)
+    stream_state_model = stream_state.StreamStateModel()
+    finders = character.finders_from_model(char_model)
+    finders.append(stream_state.StreamStateFinder(stream_state_model))
 
     surface = pygame.Surface((990, 740))
 
     offsets = [(5, i * 28 + 5 + 740) for i in range(6)] + [(305, i * 28 + 5 + 740) for i in range(6)]
-    finder_names = [font.render(finder.name, True, (255, 255, 255)) for finder in char_finders]
+    finder_names = [font.render(finder.name, True, (255, 255, 255)) for finder in finders]
 
     clock = pygame.time.Clock()
     letter_count = 0
@@ -79,16 +82,21 @@ def main():
         frame = Node(image)
         color_mapped = cv2.applyColorMap(frame.gray.image, cv2.COLORMAP_BONE)
 
-        for i, finder in enumerate(char_finders):
-            notes = {}
-            readings = list(finder.find(frame, notes))
+        # TODO: Work on the combined piece, i.e. don't read ability text unless AbilityTag, etc
+        for i, finder in enumerate(finders):
+            readings = list(finder.find(frame))
 
             if not readings:
                 continue
 
-            rects = [reading.notes["absolute_rect"] for reading in readings if reading.notes]
-            add_reading_rects(color_mapped, finder.rect, rects)
-            value = character.found_to_string(readings)
+            # TODO: Acting rects again..
+            # rects = [reading.notes["absolute_rect"] for reading in readings if reading.notes]
+            # add_reading_rects(color_mapped, finder.rect, rects)
+
+            if isinstance(finder, character.CharacterFinder):
+                value = character.found_to_string(readings)
+            else:
+                value = readings[0].value
 
             # for j, (prob, char) in enumerate(reading.prob_chars):
             #     if prob < 0.51:

@@ -37,15 +37,24 @@ class TestFramework:
         self.node_to_id = {}
         self.node_to_result = {}
 
+    def add_nodes(self, node: Node, result: TestResult):
+        if node is None:
+            return
+        for descendent in node.descendents_and_me():
+            if descendent.test_uuid is not None:
+                continue
+            new_id = uuid4()
+            descendent.test_uuid = new_id
+            descendent.test_result = result
+            self.id_to_node[new_id] = descendent
+
     def record(self, result: TestResult):
         result.idx = len(self.results)
         self.results.append(result)
 
-        for node in result.frame.descendents_and_me():
-            new_id = uuid4()
-            node.test_uuid = new_id
-            node.test_result = result
-            self.id_to_node[new_id] = node
+        self.add_nodes(result.frame, result)
+        for reading in result.readings:
+            self.add_nodes(reading.most_relevant_node, result)
 
         sys.stdout.write(OK_DOT if result.ok else FAIL_DOT)
         if len(self.results) % WRAP_AT == (WRAP_AT - 1):
@@ -70,10 +79,12 @@ class TestFramework:
 
 def run_all_tests() -> TestFramework:
     import birdvision.character.testing
+    import birdvision.stream_state.testing
 
     framework = TestFramework()
     test_sets = [
-        birdvision.character.testing.run()
+        birdvision.character.testing.run(),
+        birdvision.stream_state.testing.run()
     ]
 
     for result in itertools.chain(*test_sets):
