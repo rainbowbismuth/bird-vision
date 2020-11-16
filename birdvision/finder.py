@@ -4,7 +4,7 @@ This module contains `Finder` and `Found`, which allow you to find specific thin
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Optional, Iterable
+from typing import Iterable, Optional
 
 from birdvision.node import Node
 
@@ -18,23 +18,18 @@ class Found:
         finder: The finder this object was found with.
         value: The object itself, could be anything depending on the specific Finder.
         certainty: The certainty in which we found this value.
-        notes: An optional set of notes to go along with what we found.
+        most_relevant_node: The most relevant node to this found object, if any.
     """
     finder: 'Finder'
     value: object
     certainty: float
-    notes: Optional[dict]
+    most_relevant_node: Optional[Node]
 
 
 class Finder(ABC):
     name: str
 
     @abstractmethod
-    def find(self, frame: Node, notes: dict = None) -> Iterable[Found]:
-        """
-        Start finding things in the `frame`.
-
-        An optional notes dictionary can be given that the finder can leave notes in. The intent is that our testing
-        framework should be able to 'peek inside' this functions processing, but we don't need to do it live.
-        """
+    def find(self, frame: Node) -> Iterable[Found]:
+        """Start finding things in the `frame`."""
         pass

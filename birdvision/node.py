@@ -1,6 +1,7 @@
+from typing import Optional, Callable, Iterable
+
 import cv2
 import numpy as np
-from typing import Optional, Callable, Iterable
 
 from birdvision.rectangle import Rectangle
 
@@ -17,12 +18,20 @@ class Node:
         self.key = key
         self.children = {}
 
-    @property
     def ancestors(self) -> Iterable['Node']:
         cur = self.parent
         while cur is not None:
             yield cur
             cur = cur.parent
+
+    def ancestors_and_me(self) -> Iterable['Node']:
+        yield self
+        yield from self.ancestors()
+
+    def descendents(self) -> Iterable['Node']:
+        yield self
+        for child in self.children.values():
+            yield from child.descendents()
 
     @property
     def gray(self) -> 'Node':

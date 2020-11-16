@@ -1,20 +1,19 @@
 """
 A small local web application, to view the results of our automated testing.
 """
-from typing import List
+from uuid import UUID
 
 import cv2
-import numpy as np
 from dotenv import load_dotenv, find_dotenv
-from flask import Flask, Response, render_template
+from flask import Flask, Markup, Response, render_template
 
 import birdvision.quiet
 import birdvision.testing
-from birdvision.rectangle import Rectangle
+from birdvision.node import Node
 
 load_dotenv(find_dotenv())
 birdvision.quiet.silence_tensorflow()
-birdvision.testing.run_all_tests()
+TESTS = birdvision.testing.run_all_tests()
 
 app = Flask(__name__, static_url_path='')
 
@@ -26,73 +25,41 @@ def to_png(image):
     return Response(cv2.imencode('.png', image)[1].tobytes(), mimetype='image/png')
 
 
-def add_reading_rects_cropped(image, local_rects: List[Rectangle]):
-    move_by = 200 // len(local_rects)
-    for i, r in enumerate(local_rects):
-        cv2.rectangle(image, r.top_left, r.bottom_right, (i * move_by, i * move_by, 255 - i * move_by), 1)
+@app.template_filter('node_img')
+def node_image_filter(node: Node):
+    if node is None:
+        return ''
+    mark_up = f'<a href="/node/{node.test_uuid}"><img class="node-img" src="/node/{node.test_uuid}/image"></a>'
+    return Markup(mark_up)
 
 
 @app.route('/')
 def show_index():
-    failures = [result for result in birdvision.testing.RESULTS if not result.ok]
+    failures = list(TESTS.failures())
     return render_template('index.html', failures=failures)
 
 
 @app.route('/test/<int:index>')
 def show_test(index):
-    result = birdvision.testing.RESULTS[index]
+    result = TESTS.results[index]
     return render_template('test.html', result=result)
 
 
 @app.route('/test/<int:index>/frame')
 def show_test_frame(index):
-    result = birdvision.testing.RESULTS[index]
+    result = TESTS.results[index]
     return to_png(result.frame.image)
 
 
-@app.route('/test/<int:index>/char/<int:char_idx>')
-def show_test_char(index, char_idx):
-    result = birdvision.testing.RESULTS[index]
-    reading = result.readings[char_idx]
-    if reading.notes:
-        return to_png(reading.notes["crop"].image)
-    else:
-        return to_png(np.zeros((32, 32)))
+@app.route('/node/<node_id>')
+def show_test_node(node_id):
+    node_id = UUID(node_id)
+    node = TESTS.get_node(node_id)
+    return render_template('node.html', node=node)
 
 
-@app.route('/test/<int:index>/char/<int:char_idx>/ancestry')
-def show_test_char_ancestry(index, char_idx):
-    result = birdvision.testing.RESULTS[index]
-    reading = result.readings[char_idx]
-    ancestors = []
-    if reading.notes:
-        ancestors = list(reading.notes["crop"].ancestors)
-    return render_template('node_ancestry.html', test=index, char=char_idx, ancestors=ancestors)
-
-
-@app.route('/test/<int:index>/char/<int:char_idx>/ancestor/<int:ancestor_idx>')
-def show_test_char_ancestor(index, char_idx, ancestor_idx):
-    result = birdvision.testing.RESULTS[index]
-    reading = result.readings[char_idx]
-    if reading.notes:
-        ancestors = list(reading.notes["crop"].ancestors)
-        return to_png(ancestors[ancestor_idx].image)
-    else:
-        return to_png(np.zeros((32, 32)))
-
-
-@app.route('/test/<int:index>/prepared')
-def show_test_prepared(index):
-    result = birdvision.testing.RESULTS[index]
-    image = result.notes["prepared"]
-    return to_png(image)
-
-
-@app.route('/test/<int:index>/prepared-with-rects')
-def show_test_prepared_rects(index):
-    result = birdvision.testing.RESULTS[index]
-    image = result.notes["prepared"]
-    color_mapped = cv2.applyColorMap(image, cv2.COLORMAP_BONE)
-    local_rects = [reading.notes["local_rect"] for reading in result.readings if reading.notes]
-    add_reading_rects_cropped(color_mapped, local_rects)
-    return to_png(color_mapped)
+@app.route('/node/<node_id>/image')
+def show_test_node_image(node_id):
+    node_id = UUID(node_id)
+    node = TESTS.get_node(node_id)
+    return to_png(node.image)

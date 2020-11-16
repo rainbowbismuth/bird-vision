@@ -3,23 +3,22 @@
 {% block content %}
     <div class="row">
         <div class="col">
-            {% if result.ok %}
-                <h2>OK &mdash; {{ result.finder.name }} &mdash; {{ result.file }}</h2>
-            {% else %}
-                <h2>FAIL &mdash; {{ result.finder.name }} &mdash; {{ result.file }}</h2>
-            {% endif %}
+            <a href="/test/{{ result.idx }}">
+                {% if result.ok %}
+                    <h2>OK &mdash; {{ result.finder.name }} &mdash; {{ result.file }}</h2>
+                {% else %}
+                    <h2>FAIL &mdash; {{ result.finder.name }} &mdash; {{ result.file }}</h2>
+                {% endif %}
+            </a>
 
-            <img height="600" src="/test/{{ result.idx }}/frame">
-            <br/>
-            <img src="/test/{{ result.idx }}/prepared-with-rects">
+            {{ result.frame | node_img }}
 
             <table>
                 <thead>
                 <tr>
                     <th>Certainty</th>
-                    <th>Character</th>
-                    <th>Image</th>
-                    <th>Ancestry</th>
+                    <th>Value</th>
+                    <th>Node</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -27,8 +26,9 @@
                     <tr>
                         <td>{{ "%.2f"|format(reading.certainty) }}</td>
                         <td>{{ reading.value }}</td>
-                        <td><img src="/test/{{ result.idx }}/char/{{ loop.index0 }}"></td>
-                        <td><a href="/test/{{ result.idx }}/char/{{ loop.index0 }}/ancestry">view</a></td>
+                        <td>
+                            {{ reading.most_relevant_node | node_img }}
+                        </td>
                     </tr>
                 {% endfor %}
                 </tbody>

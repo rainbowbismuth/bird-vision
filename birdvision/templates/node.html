@@ -3,17 +3,27 @@
 {% block content %}
     <div class="row">
         <div class="col">
-            <h2>Ancestry</h2>
+            <a href="/test/{{ node.test_result.idx }}">
+                {% if node.test_result.ok %}
+                    <h2>OK &mdash; {{ node.test_result.finder.name }} &mdash; {{ node.test_result.file }}</h2>
+                {% else %}
+                    <h2>FAIL &mdash; {{ node.test_result.finder.name }} &mdash; {{ node.test_result.file }}</h2>
+                {% endif %}
+            </a>
+            {{ node | node_img }}
+            <hr/>
+            <h3>Process</h3>
+
             <table>
                 <thead>
                 <tr>
-                    <th>Process</th>
+                    <th>Function</th>
                     <th>Arguments</th>
                     <th>Result</th>
                 </tr>
                 </thead>
                 <tbody>
-                {% for ancestor in ancestors %}
+                {% for ancestor in node.ancestors_and_me() %}
                     <tr>
                         <td>
                             {% if ancestor.key[0] %}
@@ -31,8 +41,7 @@
                                 </ul>
                             {% endif %}
                         </td>
-                        <td><img style="max-width: 500px"
-                                src="/test/{{ test }}/char/{{ char }}/ancestor/{{ loop.index0 }}"></td>
+                        <td>{{ ancestor | node_img }}</td>
                     </tr>
                 {% endfor %}
                 </tbody>

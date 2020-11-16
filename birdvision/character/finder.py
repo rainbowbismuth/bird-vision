@@ -1,4 +1,4 @@
-from typing import Optional, List, Iterable
+from typing import List, Iterable
 
 import cv2
 import numpy as np
@@ -84,7 +84,7 @@ class CharacterFinder(Finder):
         self.prepare_fn = prepare_fn
         self.reader_fn = reader_fn
 
-    def find(self, frame: Node, notes: Optional[dict] = None) -> Iterable[Found]:
+    def find(self, frame: Node) -> Iterable[Found]:
         prepared_node = self.prepare_fn(frame, self.rect)
         rects = _find_character_rects(prepared_node.image)
         crops = [prepared_node.crop(rect).thumbnail32 for rect in rects]
@@ -92,19 +92,8 @@ class CharacterFinder(Finder):
         chars, certainty = self.reader_fn([crop.image for crop in crops])
         spaces = _calculate_spaces(rects)
 
-        if notes is not None:
-            notes['prepared'] = prepared_node.image
-
         for i, char in enumerate(chars):
-            note = None
-            if notes is not None:
-                note = {
-                    "crop": crops[i],
-                    "local_rect": rects[i],
-                    "absolute_rect": rects[i].move(self.rect.x, self.rect.y)
-                }
-
-            yield Found(self, char, certainty[i], note)
+            yield Found(self, char, certainty[i], crops[i])
             if i in spaces:
                 yield Found(self, ' ', 1.0, None)
 

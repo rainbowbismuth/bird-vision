@@ -61,7 +61,7 @@ def cluster_images(src, dst, clusters, cluster_type, output):
     dst = Path(dst)
 
     k_means = MiniBatchKMeans(n_clusters=clusters)
-    file_chunks = list(chunk(list(src.glob('**/*')), size=clusters * 5))
+    file_chunks = list(chunk(list(src.glob('**/*')), size=max(100, clusters * 5)))
     predictions = []
 
     def partial_fit(_i, images):

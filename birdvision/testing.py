@@ -1,21 +1,17 @@
 """
 This module contains a simple testing framework, so that we can test finders and view their results.
-
-It's designed so that all test results are stored in a global variable, and you will need to re-run the program
-to rerun the tests.
 """
 import itertools
 import sys
 from dataclasses import dataclass
 from importlib.abc import Finder
-from typing import List
+from typing import List, Iterable
+from uuid import UUID, uuid4
 
 from termcolor import colored
 
 from birdvision.finder import Found
 from birdvision.node import Node
-
-RESULTS = []
 
 OK_DOT = colored('.', 'green')
 FAIL_DOT = colored('.', 'red')
@@ -31,32 +27,57 @@ class TestResult:
     actual: object
     expected: object
     readings: List[Found]
-    notes: dict
     idx: int = 0
 
 
-def add_test_result(result: TestResult):
-    result.idx = len(RESULTS)
-    RESULTS.append(result)
-    sys.stdout.write(OK_DOT if result.ok else FAIL_DOT)
-    if len(RESULTS) % WRAP_AT == (WRAP_AT - 1):
-        sys.stdout.write('\n')
+class TestFramework:
+    def __init__(self):
+        self.results = []
+        self.id_to_node = {}
+        self.node_to_id = {}
+        self.node_to_result = {}
+
+    def record(self, result: TestResult):
+        result.idx = len(self.results)
+        self.results.append(result)
+
+        for node in result.frame.descendents():
+            new_id = uuid4()
+            node.test_uuid = new_id
+            node.test_result = result
+            self.id_to_node[new_id] = node
+
+        sys.stdout.write(OK_DOT if result.ok else FAIL_DOT)
+        if len(self.results) % WRAP_AT == (WRAP_AT - 1):
+            sys.stdout.write('\n')
+
+    def done(self):
+        if len(self.results) % WRAP_AT != 0:
+            print()
+
+    def failures(self) -> Iterable[TestResult]:
+        for result in self.results:
+            if not result.ok:
+                yield result
+
+    def summarize_to_stdout(self):
+        failures = len(list(self.failures()))
+        print(f'\n{failures} failures / {len(self.results)} total')
+
+    def get_node(self, node_id: UUID) -> Node:
+        return self.id_to_node[node_id]
 
 
-def run_all_tests():
+def run_all_tests() -> TestFramework:
     import birdvision.character.testing
 
+    framework = TestFramework()
     test_sets = [
         birdvision.character.testing.run()
     ]
 
     for result in itertools.chain(*test_sets):
-        add_test_result(result)
+        framework.record(result)
 
-    if len(RESULTS) % WRAP_AT != 0:
-        print()
-
-
-def summarize_tests():
-    failures = len([result for result in RESULTS if not result.ok])
-    print(f'\n{failures} failures / {len(RESULTS)} total')
+    framework.done()
+    return framework

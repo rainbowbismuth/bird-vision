@@ -9,8 +9,8 @@ from birdvision.config import configure
 def main():
     configure()
     birdvision.quiet.silence_tensorflow()
-    birdvision.testing.run_all_tests()
-    birdvision.testing.summarize_tests()
+    test_framework = birdvision.testing.run_all_tests()
+    test_framework.summarize_to_stdout()
 
 
 if __name__ == "__main__":

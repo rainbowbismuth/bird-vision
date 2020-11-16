@@ -16,12 +16,11 @@ def run():
 
     for fp, case in test_cases.items():
         img = cv2.imread('data/tests/character/' + fp)
-        frame = Node(img)
 
         for key, expected in case.items():
+            frame = Node(img)
             finder = by_name[key]
-            notes = {}
-            readings = list(finder.find(frame, notes))
+            readings = list(finder.find(frame))
             actual = character.found_to_string(readings)
             yield TestResult(fp, finder=finder, frame=frame, ok=actual == expected, actual=actual,
-                             expected=expected, readings=readings, notes=notes)
+                             expected=expected, readings=readings)
