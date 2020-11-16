@@ -1,4 +1,6 @@
-from typing import Optional, Callable, Iterable
+from typing import Callable, Iterable
+from typing import Optional
+from uuid import UUID
 
 import cv2
 import numpy as np
@@ -11,6 +13,8 @@ class Node:
     A lazily computed image node. Each accessor generates another node that is memorized, allowing us to review
     each step in our computation.
     """
+    test_uuid: Optional[UUID] = None
+    test_result: Optional[object] = None
 
     def __init__(self, image: np.ndarray, parent: Optional['Node'] = None, key=None):
         self.image = image

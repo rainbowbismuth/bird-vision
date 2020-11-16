@@ -29,6 +29,10 @@ class Found:
 class Finder(ABC):
     name: str
 
+    @property
+    def full_name(self):
+        return f'{self.__class__.__name__}::{self.name}'
+
     @abstractmethod
     def find(self, frame: Node) -> Iterable[Found]:
         """Start finding things in the `frame`."""
