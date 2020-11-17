@@ -14,6 +14,3 @@ class StreamStateFinder(Finder):
         # TODO: Yeah see? The transformation inside the model class is hidden...
         state, certainty, node = self.model.stream_state(frame)
         yield Found(self, state, certainty, node)
-
-
-

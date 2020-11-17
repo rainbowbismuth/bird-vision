@@ -1,11 +1,11 @@
 """
 This program trains all of our models from scratch
 """
-from birdvision.character import train_small_digit, train_alpha_num
-from birdvision.stream_state import train_stream_state
-from birdvision.config import configure
-
 import click
+
+from birdvision.character import train_small_digit, train_alpha_num
+from birdvision.config import configure
+from birdvision.stream_state import train_stream_state
 
 
 @click.command()
