@@ -29,8 +29,7 @@ def to_png(image):
 def node_image_filter(node: Node):
     if node is None:
         return ''
-    mark_up = f'<a href="/node/{node.test_uuid}"><img class="node-img" src="/node/{node.test_uuid}/image"></a>'
-    return Markup(mark_up)
+    return Markup(render_template('node_img.html', node=node))
 
 
 @app.route('/')
