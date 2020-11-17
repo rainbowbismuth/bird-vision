@@ -72,7 +72,6 @@ def main():
         try:
             image = queue.get(block=False)
         except Empty:
-            print(f'{queue.qsize():03d}', f'{saved_screens:05d}', 'no frame')
             clock.tick(fps)
             continue
 
@@ -126,11 +125,16 @@ def main():
         arr = pygame.surfarray.map_array(surface, color_mapped).swapaxes(0, 1)
         pygame.surfarray.blit_array(surface, arr)
         screen.blit(surface, surface.get_rect())
+
+        f_duration = time.monotonic() - f_start
+        status_line = f'{queue.qsize():03d} {saved_screens:05d} {f_duration * 1000:.2f}ms'
+        status_surf = font.render(status_line, True, (100, 255, 100))
+        screen.blit(status_surf, (width - 200, 25))
+
+
         pygame.display.flip()
         screen.fill(black)
 
-        f_duration = time.monotonic() - f_start
-        print(f'{queue.qsize():03d}', f'{saved_screens:05d}', f'{f_duration * 1000:.2f}ms')
 
         clock.tick(fps)
 
