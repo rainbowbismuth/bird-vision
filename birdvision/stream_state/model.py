@@ -54,8 +54,8 @@ def prepare_frame(frame: Node) -> np.ndarray:
     gray = frame.gray
 
     everything = gray.thumbnail32.image
-    bottom_left = gray.crop(Rectangle(44, 522, 463, 175)).thumbnail32.image
-    bottom_right = gray.crop(Rectangle(520, 530, 440, 165)).thumbnail32.image
+    bottom_left = gray.crop(Rectangle(40, 522, 470, 175)).thumbnail32.image
+    bottom_right = gray.crop(Rectangle(520, 522, 470, 175)).thumbnail32.image
     effect_area = gray.crop(Rectangle(260, 94, 450, 95)).thumbnail32.image
 
     # TODO: Huh... I guess with my current architecture this isn't easy to represent.
@@ -98,7 +98,9 @@ def train_stream_state():
         tf.keras.layers.AveragePooling2D(),
         tf.keras.layers.Flatten(),
         tf.keras.layers.Dense(256, activation='relu'),
+        tf.keras.layers.Dropout(0.5),
         tf.keras.layers.Dense(128, activation='relu'),
+        tf.keras.layers.Dropout(0.5),
         tf.keras.layers.Dense(len(STREAM_STATES),
                               activation='softmax',
                               kernel_initializer='he_normal',

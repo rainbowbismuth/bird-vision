@@ -33,7 +33,7 @@ def main():
 
     stop_event = threading.Event()
 
-    queue = Queue(maxsize=fps * 10)
+    queue = Queue(maxsize=fps * 30)
     ffmpeg_thread = threading.Thread(
         target=lambda: stream_viewer.download_stream(queue, stop_event),
         daemon=True)
@@ -59,7 +59,8 @@ def main():
     finder_names = [font.render(finder.name, True, (255, 255, 255)) for finder in finders]
 
     clock = pygame.time.Clock()
-    letter_count = 0
+    saved_screens = 0
+    last_state = None
 
     while not stop_event.is_set():
         for event in pygame.event.get():
@@ -71,6 +72,7 @@ def main():
         try:
             image = queue.get(block=False)
         except Empty:
+            print(f'{queue.qsize():03d}', f'{saved_screens:05d}', 'no frame')
             clock.tick(fps)
             continue
 
@@ -107,6 +109,12 @@ def main():
 
             certainty = np.product([reading.certainty for reading in readings])
 
+            if certainty < 0.51 and isinstance(finder, stream_state.StreamStateFinder):
+                if value != last_state:
+                    cv2.imwrite(f'/Volumes/RAM_Disk/saved/state_{value}_{saved_screens}.jpg', image)
+                    saved_screens += 1
+                    last_state = value
+
             offset = offset_x, offset_y = offsets[i]
             screen.blit(finder_names[i], offset)
             text_surf = font.render(value, True, (255, 255, 255))
@@ -122,7 +130,7 @@ def main():
         screen.fill(black)
 
         f_duration = time.monotonic() - f_start
-        print(f'{queue.qsize():03d}', f'{letter_count:05d}', f'{f_duration * 1000:.2f}ms')
+        print(f'{queue.qsize():03d}', f'{saved_screens:05d}', f'{f_duration * 1000:.2f}ms')
 
         clock.tick(fps)
 

@@ -23,13 +23,14 @@ def download_stream(queue: q.Queue, stop: threading.Event, fps=None):
         if fps is None:
             fps = int(os.environ['FPS'])
         stream_url = get_stream_url()
-
+        # '-r', str(fps),
         with subprocess.Popen(['ffmpeg', '-loglevel', 'panic', '-i', stream_url, '-filter:v',
-                               'crop=990:740:145:260', '-q:v', '2', '-r', str(fps), '-f',
+                               'crop=990:740:145:260', '-q:v', '2',  '-f',
                                'mpjpeg', 'pipe:1'],
                               stdout=subprocess.PIPE,
                               bufsize=1024 * 1024 * 2) as proc:
             length = 0
+            frame_drop = 0
             while not stop.is_set():
                 line = proc.stdout.readline().strip()
                 if line.startswith(b'--'):
@@ -41,6 +42,11 @@ def download_stream(queue: q.Queue, stop: threading.Event, fps=None):
                     length = int(line[len(b'Content-length: '):])
                     continue
                 if line == b'':
-                    queue.put(proc.stdout.read(length))
+                    try:
+                        queue.put(proc.stdout.read(length), block=False)
+                    except q.Full:
+                        frame_drop += 1
+                        print(f"dropped frame {frame_drop}")
+                        continue
     finally:
         stop.set()
