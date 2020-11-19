@@ -1,10 +1,11 @@
-from typing import List, Iterable
+from dataclasses import dataclass
+from typing import List
+from typing import Optional
 
 import cv2
 import numpy as np
 
 from birdvision.character.model import CharacterModel
-from birdvision.finder import Finder, Found
 from birdvision.node import Node
 from birdvision.rectangle import Rectangle
 
@@ -77,32 +78,54 @@ def _calculate_spaces(rects: List[Rectangle]):
     return out
 
 
-class CharacterFinder(Finder):
-    def __init__(self, name: str, rect: Rectangle, prepare_fn, reader_fn):
+@dataclass
+class String:
+    chars: [str]
+    certainty: [float]
+    nodes: [Optional[Node]]
+
+    def to_str(self) -> str:
+        return ''.join(self.chars)
+
+
+class StringFinder:
+    def __init__(self, name: str, rect: Rectangle, prepare_fn, reader_fn, find_spaces: bool = False):
         self.name = name
         self.rect = rect
         self.prepare_fn = prepare_fn
         self.reader_fn = reader_fn
+        self.find_spaces = find_spaces
 
-    def find(self, frame: Node) -> Iterable[Found]:
+    def __call__(self, frame: Node) -> String:
         prepared_node = self.prepare_fn(frame, self.rect)
         rects = _find_character_rects(prepared_node.image)
         crops = [prepared_node.crop(rect).thumbnail32 for rect in rects]
 
         chars, certainty = self.reader_fn([crop.image for crop in crops])
-        spaces = _calculate_spaces(rects)
 
+        if self.find_spaces:
+            spaces = _calculate_spaces(rects)
+        else:
+            spaces = []
+
+        res = String([], [], [])
         for i, char in enumerate(chars):
-            yield Found(self, char, certainty[i], crops[i])
+            res.chars.append(char)
+            res.certainty.append(certainty[i])
+            res.nodes.append(crops[i])
             if i in spaces:
-                yield Found(self, ' ', 1.0, None)
+                res.chars.append(' ')
+                res.certainty.append(1.0)
+                res.nodes.append(None)
+
+        return res
 
 
-def _light_text(frame: Node, rect: Rectangle):
+def light_text(frame: Node, rect: Rectangle):
     return frame.gray_min.crop(rect).threshold_binary(125, 255)
 
 
-def _dark_text(frame: Node, rect: Rectangle):
+def dark_text(frame: Node, rect: Rectangle):
     return frame.gray_max.crop(rect).threshold_binary_inv(110, 255)
 
 
@@ -111,20 +134,16 @@ def finders_from_model(model: CharacterModel):
     alpha_num = model.read_alpha_num
 
     return [
-        CharacterFinder('minHP', Rectangle(350, 588, 60, 27), prepare_fn=_light_text, reader_fn=small_digit),
-        CharacterFinder('maxHP', Rectangle(423, 601, 60, 27), prepare_fn=_light_text, reader_fn=small_digit),
-        CharacterFinder('minMP', Rectangle(350, 623, 60, 27), prepare_fn=_light_text, reader_fn=small_digit),
-        CharacterFinder('maxMP', Rectangle(423, 636, 60, 27), prepare_fn=_light_text, reader_fn=small_digit),
-        CharacterFinder('minCT', Rectangle(350, 658, 60, 27), prepare_fn=_light_text, reader_fn=small_digit),
-        CharacterFinder('maxCT', Rectangle(423, 671, 60, 27), prepare_fn=_light_text, reader_fn=small_digit),
-        CharacterFinder('brave', Rectangle(725, 653, 42, 30), prepare_fn=_dark_text, reader_fn=small_digit),
-        CharacterFinder('faith', Rectangle(877, 653, 42, 30), prepare_fn=_dark_text, reader_fn=small_digit),
-        CharacterFinder('name', Rectangle(610, 545, 320, 40), prepare_fn=_dark_text, reader_fn=alpha_num),
-        CharacterFinder('job', Rectangle(610, 595, 320, 40), prepare_fn=_dark_text, reader_fn=alpha_num),
-        CharacterFinder('ability', Rectangle(270, 122, 425, 58), prepare_fn=_dark_text, reader_fn=alpha_num),
+        StringFinder('curHP', Rectangle(350, 588, 60, 27), prepare_fn=light_text, reader_fn=small_digit),
+        StringFinder('maxHP', Rectangle(423, 601, 60, 27), prepare_fn=light_text, reader_fn=small_digit),
+        StringFinder('curMP', Rectangle(350, 623, 60, 27), prepare_fn=light_text, reader_fn=small_digit),
+        StringFinder('maxMP', Rectangle(423, 636, 60, 27), prepare_fn=light_text, reader_fn=small_digit),
+        StringFinder('curCT', Rectangle(350, 658, 60, 27), prepare_fn=light_text, reader_fn=small_digit),
+        StringFinder('maxCT', Rectangle(423, 671, 60, 27), prepare_fn=light_text, reader_fn=small_digit),
+        StringFinder('brave', Rectangle(725, 653, 42, 30), prepare_fn=dark_text, reader_fn=small_digit),
+        StringFinder('faith', Rectangle(877, 653, 42, 30), prepare_fn=dark_text, reader_fn=small_digit),
+        StringFinder('name', Rectangle(610, 545, 320, 40), prepare_fn=dark_text, reader_fn=alpha_num, find_spaces=True),
+        StringFinder('job', Rectangle(610, 595, 320, 40), prepare_fn=dark_text, reader_fn=alpha_num, find_spaces=True),
+        StringFinder('ability', Rectangle(270, 122, 425, 58), prepare_fn=dark_text, reader_fn=alpha_num,
+                     find_spaces=True),
     ]
-
-
-def found_to_string(found_chars):
-    """Join a list of found characters together into a string"""
-    return ''.join([found.value for found in found_chars])

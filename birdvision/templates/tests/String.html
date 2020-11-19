@@ -1,0 +1,20 @@
+<table>
+    <thead>
+    <tr>
+        <th>Certainty</th>
+        <th>Value</th>
+        <th>Node</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for node in data.nodes %}
+        <tr>
+            <td>{{ "%.2f"|format(data.certainty[loop.index0]) }}</td>
+            <td>{{ data.chars[loop.index0] }}</td>
+            <td>
+                {{ node | node_img }}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

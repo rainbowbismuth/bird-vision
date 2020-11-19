@@ -41,7 +41,9 @@ def show_index():
 @app.route('/test/<int:index>')
 def show_test(index):
     result = TESTS.results[index]
-    return render_template('test.html', result=result)
+    test_template = f'tests/{result.data.__class__.__name__}.html'
+    test_render = Markup(render_template(test_template, data=result.data))
+    return render_template('test.html', result=result, test_render=test_render)
 
 
 @app.route('/test/<int:index>/frame')

@@ -5,9 +5,9 @@
         <div class="col">
             <a href="/test/{{ node.test_result.idx }}">
                 {% if node.test_result.ok %}
-                    <h2>OK &mdash; {{ node.test_result.finder.name }} &mdash; {{ node.test_result.file }}</h2>
+                    <h2>OK &mdash; {{ node.test_result.name }} &mdash; {{ node.test_result.file }}</h2>
                 {% else %}
-                    <h2>FAIL &mdash; {{ node.test_result.finder.name }} &mdash; {{ node.test_result.file }}</h2>
+                    <h2>FAIL &mdash; {{ node.test_result.name }} &mdash; {{ node.test_result.file }}</h2>
                 {% endif %}
             </a>
             {{ node | node_img }}

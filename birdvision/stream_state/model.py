@@ -3,30 +3,63 @@ TODO: Module comment
 """
 
 import os
+from dataclasses import dataclass
 
 import numpy as np
 
 from birdvision.node import Node
 from birdvision.rectangle import Rectangle
 
+BLACK = 'Black'
+COMMERCIAL = 'Commercial'
+STREAM = 'Stream'
+STREAM_FIGHT = 'Stream_Fight'
+STREAM_BETTING_OPEN = 'Stream_Betting_Open'
+PREGAME = 'Pregame'
+PREGAME_UNIT_CARD = 'Pregame_UnitCard'
+GAME = 'Game'
+GAME_LARGE_EFFECT = 'Game_LargeEffect'
+GAME_SELECT_REACTION = 'Game_Select_Reaction'
+GAME_SELECT_HALF_LEFT = 'Game_Select_Half_Left'
+GAME_SELECT_HALF_RIGHT = 'Game_Select_Half_Right'
+GAME_SELECT_FULL = 'Game_Select_Full'
+GAME_ABILITY_TAG = 'Game_AbilityTag'
+STREAM_WINNER = 'Stream_Winner'
+STREAM_RESULT = 'Stream_Result'
+
 STREAM_STATES = [
-    'Black',
-    'Commercial',
-    'Stream',
-    'Stream_Fight',
-    'Stream_Betting_Open',
-    'Pregame',
-    'Pregame_UnitCard',
-    'Game',
-    'Game_LargeEffect',
-    'Game_Select_Reaction',
-    'Game_Select_Half_Left',
-    'Game_Select_Half_Right',
-    'Game_Select_Full',
-    'Game_AbilityTag',
-    'Stream_Winner',
-    'Stream_Result',
+    BLACK,
+    COMMERCIAL,
+    STREAM,
+    STREAM_FIGHT,
+    STREAM_BETTING_OPEN,
+    PREGAME,
+    PREGAME_UNIT_CARD,
+    GAME,
+    GAME_LARGE_EFFECT,
+    GAME_SELECT_REACTION,
+    GAME_SELECT_HALF_LEFT,
+    GAME_SELECT_HALF_RIGHT,
+    GAME_SELECT_FULL,
+    GAME_ABILITY_TAG,
+    STREAM_WINNER,
+    STREAM_RESULT,
 ]
+
+
+def in_game(state: str) -> bool:
+    return state.startswith('Game')
+
+
+def unit_select(state: str) -> bool:
+    return state.startswith('Game_Select')
+
+
+@dataclass
+class StreamState:
+    name: str
+    certainty: float
+    node: Node
 
 
 class StreamStateModel:
@@ -41,13 +74,13 @@ class StreamStateModel:
         import tensorflow as tf
         self.model = tf.keras.models.load_model(os.environ['STREAM_STATE_MODEL'])
 
-    def stream_state(self, frame: Node) -> (str, float, Node):
+    def __call__(self, frame: Node) -> StreamState:
         prepared = prepare_frame(frame)
         y_pred = self.model(np.array([prepared / 255.0]))
         idx: int = np.argmax(y_pred, axis=1)[0]
         certainty: float = np.max(y_pred, axis=1)
         state = STREAM_STATES[idx]
-        return state, certainty, Node(prepared)
+        return StreamState(state, certainty, Node(prepared))
 
 
 def prepare_frame(frame: Node) -> np.ndarray:

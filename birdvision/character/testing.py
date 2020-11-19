@@ -20,7 +20,7 @@ def run():
         for key, expected in case.items():
             frame = Node(img)
             finder = by_name[key]
-            readings = list(finder.find(frame))
-            actual = character.found_to_string(readings)
-            yield TestResult(fp, finder=finder, frame=frame, ok=actual == expected, actual=actual,
-                             expected=expected, readings=readings)
+            string = finder(frame)
+            actual = string.to_str()
+            yield TestResult(fp, name=finder.name, frame=frame, data=string, ok=actual == expected, actual=actual,
+                             expected=expected, relevant_nodes=string.nodes)

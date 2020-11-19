@@ -12,12 +12,12 @@ import cv2
 import numpy as np
 import pygame
 
-import birdvision.character as character
 import birdvision.quiet
+import birdvision.stream as stream_viewer
 import birdvision.stream_state as stream_state
-import birdvision.stream_viewer as stream_viewer
 from birdvision.config import configure
 from birdvision.node import Node
+from birdvision.watcher import Watcher
 
 
 def add_reading_rects(image, finder_rect, rects):
@@ -48,18 +48,13 @@ def main():
     screen = pygame.display.set_mode(size)
     black = 0, 0, 0
 
-    char_model = character.CharacterModel()
-    stream_state_model = stream_state.StreamStateModel()
-    finders = character.finders_from_model(char_model)
-    finders.append(stream_state.StreamStateFinder(stream_state_model))
-
     surface = pygame.Surface((990, 740))
 
     offsets = [(5, i * 28 + 5 + 740) for i in range(6)] + [(505, i * 28 + 5 + 740) for i in range(6)]
-    finder_names = [font.render(finder.name, True, (255, 255, 255)) for finder in finders]
 
     clock = pygame.time.Clock()
     saved_screens = 0
+    watcher = Watcher()
     last_state = None
 
     while not stop_event.is_set():
@@ -83,43 +78,10 @@ def main():
         frame = Node(image)
         color_mapped = cv2.applyColorMap(frame.gray.image, cv2.COLORMAP_BONE)
 
-        # TODO: Work on the combined piece, i.e. don't read ability text unless AbilityTag, etc
-        for i, finder in enumerate(finders):
-            readings = list(finder.find(frame))
-
-            if not readings:
-                continue
-
-            # TODO: Acting rects again..
-            # rects = [reading.notes["absolute_rect"] for reading in readings if reading.notes]
-            # add_reading_rects(color_mapped, finder.rect, rects)
-
-            if isinstance(finder, character.CharacterFinder):
-                value = character.found_to_string(readings)
-            else:
-                value = readings[0].value
-
-            # for j, (prob, char) in enumerate(reading.prob_chars):
-            #     if prob < 0.51:
-            #         cv2.imwrite(
-            #             f'/Volumes/RAM_Disk_512MB/letters/{reading.name}_{char}_{letter_count}.png',
-            #             reading.images[j])
-            #         letter_count += 1
-
-            certainty = np.product([reading.certainty for reading in readings])
-
-            if certainty < 0.51 and isinstance(finder, stream_state.StreamStateFinder):
-                if value != last_state:
-                    cv2.imwrite(f'/Volumes/RAM_Disk/saved/state_{value}_{saved_screens}.jpg', image)
-                    saved_screens += 1
-                    last_state = value
-
-            offset = offset_x, offset_y = offsets[i]
-            screen.blit(finder_names[i], offset)
-            text_surf = font.render(value, True, (255, 255, 255))
-            screen.blit(text_surf, (offset_x + 100, offset_y))
-            certainty_surf = font.render(f'{certainty:.2f}', True, (255, 255, 255))
-            screen.blit(certainty_surf, (offset_x + 400, offset_y))
+        frame_info = watcher(frame)
+        if frame_info != last_state and frame_info.state != stream_state.BLACK:
+            print(frame_info)
+            last_state = frame_info
 
         color_mapped = color_mapped[..., ::-1].copy()
         arr = pygame.surfarray.map_array(surface, color_mapped).swapaxes(0, 1)
@@ -131,10 +93,8 @@ def main():
         status_surf = font.render(status_line, True, (100, 255, 100))
         screen.blit(status_surf, (width - 200, 25))
 
-
         pygame.display.flip()
         screen.fill(black)
-
 
         clock.tick(fps)
 

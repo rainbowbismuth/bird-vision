@@ -4,13 +4,11 @@ This module contains a simple testing framework, so that we can test finders and
 import itertools
 import sys
 from dataclasses import dataclass
-from importlib.abc import Finder
 from typing import List, Iterable
 from uuid import UUID, uuid4
 
 from termcolor import colored
 
-from birdvision.finder import Found
 from birdvision.node import Node
 
 OK_DOT = colored('.', 'green')
@@ -21,12 +19,13 @@ WRAP_AT = 100
 @dataclass
 class TestResult:
     file: str
-    finder: Finder
+    name: str
     frame: Node
     ok: bool
+    data: object
     actual: object
     expected: object
-    readings: List[Found]
+    relevant_nodes: List[Node]
     idx: int = 0
 
 
@@ -53,8 +52,8 @@ class TestFramework:
         self.results.append(result)
 
         self.add_nodes(result.frame, result)
-        for reading in result.readings:
-            self.add_nodes(reading.most_relevant_node, result)
+        for node in result.relevant_nodes:
+            self.add_nodes(node, result)
 
         sys.stdout.write(OK_DOT if result.ok else FAIL_DOT)
         if len(self.results) % WRAP_AT == (WRAP_AT - 1):

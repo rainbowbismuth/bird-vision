@@ -26,7 +26,6 @@ def download_stream(queue: q.Queue, stop: threading.Event):
                               stdout=subprocess.PIPE,
                               bufsize=1024 * 1024 * 2) as proc:
             length = 0
-            frame_drop = 0
             while not stop.is_set():
                 line = proc.stdout.readline().strip()
                 if line.startswith(b'--'):
