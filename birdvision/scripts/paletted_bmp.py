@@ -6,9 +6,8 @@ from pathlib import Path
 
 import click
 import cv2
-
-from tqdm import tqdm
 from PIL import Image
+from tqdm import tqdm
 
 from birdvision.config import configure
 from birdvision.rectangle import Rectangle
@@ -20,10 +19,10 @@ def split_unit_pieces(out_dir: Path, out_file: Path, num: int):
     contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     rects = [cv2.boundingRect(ctr) for ctr in contours]
     rects.sort(key=lambda t: (t[1] << 16) + t[0])
-    for i, (x,y,w,h) in enumerate(rects):
+    for i, (x, y, w, h) in enumerate(rects):
         if w < 3 or h < 3:
             continue
-        r = Rectangle(x,y,w,h)
+        r = Rectangle(x, y, w, h)
         cropped = r.crop(img)
         piece_out_dir = out_dir / f'Palette_{num}'
         piece_out_dir.mkdir(parents=True, exist_ok=True)
@@ -36,7 +35,7 @@ def palettes_out(src: Path, dst: Path):
     pal = image.getpalette()
     portrait = False
     for i in range(16):
-        sub_pal = pal[i*16*3 : (i+1)*16*3]
+        sub_pal = pal[i * 16 * 3: (i + 1) * 16 * 3]
         if not sub_pal:
             return
         if sum(sub_pal) == 0:

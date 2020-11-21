@@ -75,7 +75,7 @@ def _split_large_chars(chars: List[Node], rects: List[Rectangle]) -> Iterable[No
 
         min_x = int(width / 3)
         max_x = int(width / 1.5)
-        center = char.image[:int(height*0.60), min_x:max_x]
+        center = char.image[:int(height * 0.60), min_x:max_x]
         energy = center.sum(axis=0)
         min_seam = np.argmin(energy)
 
@@ -84,7 +84,7 @@ def _split_large_chars(chars: List[Node], rects: List[Rectangle]) -> Iterable[No
         if energy[min_seam] < 128:
             yield Node(char.image[:, :split_point], parents=[char], key=['split_left'])
             yield Node(char.image[:, split_point:], parents=[char], key=['split_right'])
-            rects.insert(i+extra, rects[i+extra])
+            rects.insert(i + extra, rects[i + extra])
             extra += 1
         else:
             yield char
