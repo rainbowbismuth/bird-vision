@@ -112,6 +112,12 @@ class String:
     def to_str(self) -> str:
         return ''.join(self.chars)
 
+    def to_int(self) -> Optional[int]:
+        s = self.to_str()
+        if len(s) == 0:
+            return None
+        return int(s)
+
 
 class StringFinder:
     def __init__(self, name: str, rect: Rectangle, prepare_fn, reader_fn, find_spaces: bool = False):
