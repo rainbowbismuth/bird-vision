@@ -14,6 +14,7 @@ sklearn = "*"
 python-dotenv = "*"
 numpy = "*"
 pygame = "*"
+pillow = "*"
 
 [dev-packages]
 
