@@ -11,20 +11,19 @@ from birdvision.stream_state import StreamStateModel
 
 @dataclass(frozen=True, eq=True)
 class UnitVitals:
-    curHP: int
-    maxHP: int
-    curMP: int
-    maxMP: int
-    curCT: int
-    maxCT: int
+    curHP: Optional[int]
+    maxHP: Optional[int]
+    curMP: Optional[int]
+    maxMP: Optional[int]
+    curCT: Optional[int]
 
 
 @dataclass(frozen=True, eq=True)
 class UnitName:
     name: str
     job: str
-    brave: int
-    faith: int
+    brave: Optional[int]
+    faith: Optional[int]
 
 
 @dataclass(frozen=True, eq=True)
@@ -35,8 +34,11 @@ class FrameInfo:
     ability: Optional[str] = None
 
 
-def string_to_int(s: String) -> int:
-    return int(s.to_str())
+def string_to_int(s: String) -> Optional[int]:
+    s = s.to_str()
+    if len(s) == 0:
+        return None
+    return int(s)
 
 
 class UnitVitalsReader:
@@ -47,7 +49,6 @@ class UnitVitalsReader:
         self.curMP = StringFinder('curMP', Rectangle(350, 623, 60, 27), prepare_fn=light_text, reader_fn=small_digit)
         self.maxMP = StringFinder('maxMP', Rectangle(423, 636, 60, 27), prepare_fn=light_text, reader_fn=small_digit)
         self.curCT = StringFinder('curCT', Rectangle(350, 658, 60, 27), prepare_fn=light_text, reader_fn=small_digit)
-        self.maxCT = StringFinder('maxCT', Rectangle(423, 671, 60, 27), prepare_fn=light_text, reader_fn=small_digit)
 
     def __call__(self, frame: Node) -> UnitVitals:
         curHP = string_to_int(self.curHP(frame))
@@ -55,8 +56,7 @@ class UnitVitalsReader:
         curMP = string_to_int(self.curMP(frame))
         maxMP = string_to_int(self.maxMP(frame))
         curCT = string_to_int(self.curCT(frame))
-        maxCT = string_to_int(self.maxCT(frame))
-        return UnitVitals(curHP, maxHP, curMP, maxMP, curCT, maxCT)
+        return UnitVitals(curHP, maxHP, curMP, maxMP, curCT)
 
 
 class UnitNameReader:

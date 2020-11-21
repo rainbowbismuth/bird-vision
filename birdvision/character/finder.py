@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Iterable
 from typing import Optional
 
 import cv2
@@ -65,6 +65,31 @@ def _find_character_rects(img):
     return out
 
 
+def _split_large_chars(chars: List[Node], rects: List[Rectangle]) -> Iterable[Node]:
+    extra = 0
+    for i, char in enumerate(chars):
+        height, width = char.image.shape
+        if width < 32:
+            yield char
+            continue
+
+        min_x = int(width / 3)
+        max_x = int(width / 1.5)
+        center = char.image[:int(height*0.60), min_x:max_x]
+        energy = center.sum(axis=0)
+        min_seam = np.argmin(energy)
+
+        split_point = min_seam + min_x
+
+        if energy[min_seam] < 128:
+            yield Node(char.image[:, :split_point], parents=[char], key=['split_left'])
+            yield Node(char.image[:, split_point:], parents=[char], key=['split_right'])
+            rects.insert(i+extra, rects[i+extra])
+            extra += 1
+        else:
+            yield char
+
+
 def _calculate_spaces(rects: List[Rectangle]):
     """Returns a list of positions in which there is a space after."""
     out = []
@@ -99,9 +124,10 @@ class StringFinder:
     def __call__(self, frame: Node) -> String:
         prepared_node = self.prepare_fn(frame, self.rect)
         rects = _find_character_rects(prepared_node.image)
-        crops = [prepared_node.crop(rect).thumbnail32 for rect in rects]
-
-        chars, certainty = self.reader_fn([crop.image for crop in crops])
+        rect_crops = [prepared_node.crop(rect) for rect in rects]
+        split_chars = _split_large_chars(rect_crops, rects)
+        final_crops = [char.thumbnail32 for char in split_chars]
+        chars, certainty = self.reader_fn([crop.image for crop in final_crops])
 
         if self.find_spaces:
             spaces = _calculate_spaces(rects)
@@ -112,7 +138,7 @@ class StringFinder:
         for i, char in enumerate(chars):
             res.chars.append(char)
             res.certainty.append(certainty[i])
-            res.nodes.append(crops[i])
+            res.nodes.append(final_crops[i])
             if i in spaces:
                 res.chars.append(' ')
                 res.certainty.append(1.0)

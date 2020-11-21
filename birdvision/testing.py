@@ -46,6 +46,13 @@ class TestFramework:
             descendent.test_uuid = new_id
             descendent.test_result = result
             self.id_to_node[new_id] = descendent
+        for ancestor in node.ancestors_and_me():
+            if ancestor.test_uuid is not None:
+                continue
+            new_id = uuid4()
+            ancestor.test_uuid = new_id
+            ancestor.test_result = result
+            self.id_to_node[new_id] = ancestor
 
     def record(self, result: TestResult):
         result.idx = len(self.results)
@@ -83,7 +90,7 @@ def run_all_tests() -> TestFramework:
     framework = TestFramework()
     test_sets = [
         birdvision.character.testing.run(),
-        birdvision.stream_state.testing.run()
+        # birdvision.stream_state.testing.run()
     ]
 
     for result in itertools.chain(*test_sets):

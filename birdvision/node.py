@@ -1,4 +1,4 @@
-from typing import Callable, Iterable
+from typing import Callable, Iterable, List
 from typing import Optional
 from uuid import UUID
 
@@ -16,17 +16,17 @@ class Node:
     test_uuid: Optional[UUID] = None
     test_result: Optional[object] = None
 
-    def __init__(self, image: np.ndarray, parent: Optional['Node'] = None, key=None):
+    def __init__(self, image: np.ndarray, parents: Optional[List['Node']] = None, key=None):
         self.image = image
-        self.parent = parent
+        self.parents = parents
         self.key = key
         self.children = {}
 
     def ancestors(self) -> Iterable['Node']:
-        cur = self.parent
-        while cur is not None:
-            yield cur
-            cur = cur.parent
+        if not self.parents:
+            return
+        for parent in self.parents:
+            yield from parent.ancestors_and_me()
 
     def ancestors_and_me(self) -> Iterable['Node']:
         yield self
@@ -97,7 +97,7 @@ def memoized_node(func: Callable[..., np.ndarray]):
             return val
         image = func(*args)
         assert image is not None
-        child = Node(image, parent=node, key=key)
+        child = Node(image, parents=[node], key=key)
         node.children[key] = child
         return child
 

@@ -76,23 +76,23 @@ class StreamStateModel:
 
     def __call__(self, frame: Node) -> StreamState:
         prepared = prepare_frame(frame)
-        y_pred = self.model(np.array([prepared / 255.0]))
+        y_pred = self.model(np.array([prepared.image / 255.0]))
         idx: int = np.argmax(y_pred, axis=1)[0]
         certainty: float = np.max(y_pred, axis=1)
         state = STREAM_STATES[idx]
-        return StreamState(state, certainty, Node(prepared))
+        return StreamState(state, certainty, prepared)
 
 
-def prepare_frame(frame: Node) -> np.ndarray:
+def prepare_frame(frame: Node) -> Node:
     gray = frame.gray
 
-    everything = gray.thumbnail32.image
-    bottom_left = gray.crop(Rectangle(40, 522, 470, 175)).thumbnail32.image
-    bottom_right = gray.crop(Rectangle(520, 522, 470, 175)).thumbnail32.image
-    effect_area = gray.crop(Rectangle(260, 94, 450, 95)).thumbnail32.image
+    everything = gray.thumbnail32
+    bottom_left = gray.crop(Rectangle(40, 522, 470, 175)).thumbnail32
+    bottom_right = gray.crop(Rectangle(520, 522, 470, 175)).thumbnail32
+    effect_area = gray.crop(Rectangle(260, 94, 450, 95)).thumbnail32
 
-    # TODO: Huh... I guess with my current architecture this isn't easy to represent.
-    return np.block([[everything, effect_area], [bottom_left, bottom_right]])
+    image = np.block([[everything.image, effect_area.image], [bottom_left.image, bottom_right.image]])
+    return Node(image, parents=[everything, bottom_left, bottom_right, effect_area])
 
 
 def load_labelled_states():
