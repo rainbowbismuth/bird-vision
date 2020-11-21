@@ -147,7 +147,7 @@ def train_stream_state():
     )
 
     xs, ys = load_labelled_states()
-    xs = xs / 255.0
+    xs = np.array([x.image for x in xs]) / 255.0
     X_train, X_test, y_train, y_test = train_test_split(xs, ys, test_size=0.2)
 
     early_stopping_cb = tf.keras.callbacks.EarlyStopping(

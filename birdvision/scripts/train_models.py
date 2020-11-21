@@ -12,12 +12,13 @@ from birdvision.stream_state import train_stream_state
 @click.option('--stream-state/--no-stream-state', default=False)
 @click.option('--small-digit/--no-small-digit', default=False)
 @click.option('--alpha-num/--no-alpha-num', default=False)
-def train_models(stream_state, small_digit, alpha_num):
-    if stream_state:
+@click.option('--all/--not-all', default=False)
+def train_models(stream_state, small_digit, alpha_num, all):
+    if all or stream_state:
         train_stream_state()
-    if small_digit:
+    if all or small_digit:
         train_small_digit()
-    if alpha_num:
+    if all or alpha_num:
         train_alpha_num()
 
 
