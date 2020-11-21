@@ -26,8 +26,8 @@ class UnitVitals:
 
 @dataclass(frozen=True, eq=True)
 class UnitName:
-    name: str
-    job: str
+    name: Optional[str]
+    job: Optional[str]
     brave: Optional[int]
     faith: Optional[int]
 
@@ -50,8 +50,8 @@ def write_low_certainty_node(path: str, node: Node):
 
 def record_low_certainty_string(tag: str, s: String):
     low_certainty_path = os.environ.get('RECORD_LOW_CERTAINTY')
-    for i, certainty in enumerate(s.certainty):
-        if certainty > LOW_CERTAINTY_CUT_OFF:
+    for i, confidence in enumerate(s.confidences):
+        if confidence > LOW_CERTAINTY_CUT_OFF:
             continue
 
         if low_certainty_path is not None:

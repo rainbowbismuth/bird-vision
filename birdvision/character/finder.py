@@ -106,10 +106,14 @@ def _calculate_spaces(rects: List[Rectangle]):
 @dataclass
 class String:
     chars: [str]
-    certainty: [float]
+    confidences: [float]
     nodes: [Optional[Node]]
 
-    def to_str(self) -> str:
+    @property
+    def confidence(self) -> float:
+        return np.product(self.confidences)
+
+    def to_str(self) -> Optional[str]:
         return ''.join(self.chars)
 
     def to_int(self) -> Optional[int]:
@@ -143,11 +147,11 @@ class StringFinder:
         res = String([], [], [])
         for i, char in enumerate(chars):
             res.chars.append(char)
-            res.certainty.append(certainty[i])
+            res.confidences.append(certainty[i])
             res.nodes.append(final_crops[i])
             if i in spaces:
                 res.chars.append(' ')
-                res.certainty.append(1.0)
+                res.confidences.append(1.0)
                 res.nodes.append(None)
 
         return res
