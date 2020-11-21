@@ -90,7 +90,7 @@ def run_all_tests() -> TestFramework:
     framework = TestFramework()
     test_sets = [
         birdvision.character.testing.run(),
-        # birdvision.stream_state.testing.run()
+        birdvision.stream_state.testing.run()
     ]
 
     for result in itertools.chain(*test_sets):

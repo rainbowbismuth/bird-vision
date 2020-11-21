@@ -60,6 +60,10 @@ class Node:
     def thumbnail64(self) -> 'Node':
         return resize(self, 64, 64)
 
+    @property
+    def invert(self):
+        return invert(self)
+
     def resize(self, width: int, height: int) -> 'Node':
         return resize(self, width, height)
 
@@ -137,3 +141,8 @@ def threshold_binary(node: Node, threshold: int, max_val: int):
 @memoized_node
 def threshold_binary_inv(node: Node, threshold: int, max_val: int):
     return cv2.threshold(node.image, threshold, max_val, cv2.THRESH_BINARY_INV)[1]
+
+
+@memoized_node
+def invert(node: Node):
+    return 255 - node.image
