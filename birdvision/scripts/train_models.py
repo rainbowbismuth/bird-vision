@@ -22,7 +22,7 @@ def train_models(stream_state, small_digit, alpha_num, object_box, all):
         train_small_digit()
     if all or alpha_num:
         train_alpha_num()
-    if all or object_box:
+    if object_box:
         train_object_model()
 
 
