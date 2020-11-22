@@ -19,7 +19,7 @@ python -m birdvision.scripts.run_tests
 
 Train new models:
 ```shell script
-python -m birdvision.scripts.train_models
+python -m birdvision.scripts.train_models --all
 ```
 
 Or, if you want to run the web viewer, to visualize test cases:
