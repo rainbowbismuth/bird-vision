@@ -38,5 +38,5 @@ python -m birdvision.scripts.live_stream
 You can set up your own RAM Disk like so, useful for mass image downloading / manipulation when you don't necessarily want it to stick around.
 
 ```shell script
-diskutil erasevolume HFS+ RAM_Disk_512MB $(hdiutil attach -nomount ram://512000)
+diskutil erasevolume HFS+ RAM_Disk_2GB $(hdiutil attach -nomount ram://4000000)
 ```
