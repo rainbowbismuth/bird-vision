@@ -41,6 +41,14 @@ class Node:
         yield from self.descendents()
 
     @property
+    def width(self) -> int:
+        return self.image.shape[1]
+
+    @property
+    def height(self) -> int:
+        return self.image.shape[0]
+
+    @property
     def gray(self) -> 'Node':
         return gray(self)
 
@@ -63,6 +71,10 @@ class Node:
     @property
     def invert(self):
         return invert(self)
+
+    @property
+    def flip_horizontally(self):
+        return flip_horizontally(self)
 
     def resize(self, width: int, height: int) -> 'Node':
         return resize(self, width, height)
@@ -146,3 +158,8 @@ def threshold_binary_inv(node: Node, threshold: int, max_val: int):
 @memoized_node
 def invert(node: Node):
     return 255 - node.image
+
+
+@memoized_node
+def flip_horizontally(node: Node):
+    return cv2.flip(node.image, 1)

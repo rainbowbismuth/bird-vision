@@ -67,7 +67,6 @@ def _train(src, charset, dst):
     import tensorflow as tf
     from sklearn.model_selection import train_test_split
 
-    # LeNet-5
     model = tf.keras.models.Sequential([
         tf.keras.layers.Reshape((32, 32, 1)),
         tf.keras.layers.Conv2D(filters=6, kernel_size=(3, 3), activation='relu', input_shape=(32, 32, 1)),

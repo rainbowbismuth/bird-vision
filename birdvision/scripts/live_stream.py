@@ -16,8 +16,10 @@ import birdvision.quiet
 import birdvision.stream as stream_viewer
 import birdvision.stream_state as stream_state
 from birdvision.config import configure
+from birdvision.constants import STREAM_WIDTH, STREAM_HEIGHT
 from birdvision.node import Node
 from birdvision.watcher import Watcher
+from birdvision.object import ObjectModel
 
 
 def add_reading_rects(image, finder_rect, rects):
@@ -44,17 +46,19 @@ def main():
     font = pygame.font.Font('data/pygame/RobotoCondensed-Regular.ttf', 20)
     pygame.display.set_caption("Birb Brains Vision")
     pygame.display.set_icon(pygame.image.load('data/pygame/icon.png'))
-    size = width, height = 990, 740 + 200
+    size = width, height = STREAM_WIDTH, STREAM_HEIGHT + 200
     screen = pygame.display.set_mode(size)
     black = 0, 0, 0
 
-    surface = pygame.Surface((990, 740))
+    surface = pygame.Surface((STREAM_WIDTH, STREAM_HEIGHT))
 
-    offsets = [(5, i * 28 + 5 + 740) for i in range(6)] + [(505, i * 28 + 5 + 740) for i in range(6)]
+    # offsets = [(5, i * 28 + 5 + STREAM_HEIGHT) for i in range(6)] \
+    #           + [(505, i * 28 + 5 + STREAM_HEIGHT) for i in range(6)]
 
     clock = pygame.time.Clock()
     saved_screens = 0
     watcher = Watcher()
+    # object_model = ObjectModel()
     last_state = None
 
     while not stop_event.is_set():
@@ -87,6 +91,14 @@ def main():
         arr = pygame.surfarray.map_array(surface, color_mapped).swapaxes(0, 1)
         pygame.surfarray.blit_array(surface, arr)
         screen.blit(surface, surface.get_rect())
+
+        # if stream_state.in_game(frame_info.state):
+        #     objects = object_model(frame)
+        #     for obj in objects:
+        #         if obj.kind == 'None':
+        #             continue
+        #         kind = font.render(obj.kind, True, (100, 255, 100))
+        #         screen.blit(kind, obj.rect.top_left)
 
         f_duration = time.monotonic() - f_start
         status_line = f'{queue.qsize():03d} {saved_screens:05d} {f_duration * 1000:.2f}ms'

@@ -10,6 +10,7 @@ from birdvision import stream_state
 from birdvision.character import CharacterModel
 from birdvision.character.finder import String, StringFinder, light_text, dark_text
 from birdvision.node import Node
+from birdvision.object import ObjectModel
 from birdvision.rectangle import Rectangle
 from birdvision.stream_state import StreamStateModel
 from birdvision.stream_state.model import StreamState

@@ -122,7 +122,6 @@ def train_stream_state():
 
     dst = os.environ['STREAM_STATE_MODEL']
 
-    # LeNet-5
     model = tf.keras.models.Sequential([
         tf.keras.layers.Reshape((64, 64, 1)),
         tf.keras.layers.Conv2D(filters=6, kernel_size=(3, 3), activation='relu', input_shape=(64, 64, 1)),
