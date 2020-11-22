@@ -5,8 +5,8 @@ This module contains functions for spawning processes to watch the Twitch stream
 import queue as q
 import subprocess
 import threading
-from birdvision.constants import STREAM_RECT
 
+from birdvision.constants import STREAM_RECT
 
 CROP_ARGUMENT = f'crop={STREAM_RECT.width}:{STREAM_RECT.height}:{STREAM_RECT.x}:{STREAM_RECT.y}'
 

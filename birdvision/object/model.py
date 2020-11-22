@@ -164,7 +164,7 @@ def generate_batches(batch_size=64, max_batches=20_000_000):
 
         xs = [process_image(just_bg), process_image(np.zeros((TILE_HEIGHT, TILE_WIDTH, 3), dtype=np.uint8))]
         ys = [none_idx, none_idx]
-        for j in range(batch_size-2):
+        for j in range(batch_size - 2):
             generated_tile = select_random_bg(backgrounds)
             kind = add_random_sprite(generated_tile, sprites)
             # cv2.imwrite(f'/Volumes/RAM_Disk/batch/{i}_{j}.png', generated_tile)

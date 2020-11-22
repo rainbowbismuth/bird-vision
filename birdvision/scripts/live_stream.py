@@ -19,7 +19,6 @@ from birdvision.config import configure
 from birdvision.constants import STREAM_WIDTH, STREAM_HEIGHT
 from birdvision.node import Node
 from birdvision.watcher import Watcher
-from birdvision.object import ObjectModel
 
 
 def add_reading_rects(image, finder_rect, rects):
